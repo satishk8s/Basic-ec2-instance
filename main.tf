@@ -5,26 +5,32 @@ provider "aws" {
     region = "${var.aws_region}"
 }
 
-#This is my vpc
+terraform {
+  required_version = "<= 0.14" #Forcing which version of Terraform needs to be used
+  required_providers {
+    aws = {
+      version = "<= 3.0.0" #Forcing which version of plugin needs to be used.
+      source = "hashicorp/aws"
+    }
+  }
+}
+
 resource "aws_vpc" "default" {
     cidr_block = "${var.vpc_cidr}"
     enable_dns_hostnames = true
     tags = {
-    Name = "${var.vpc_name}"
+        Name = "${var.vpc_name}"
 	Owner = "Satish Kumar"
-	/* environment = "${var.environment}" */
+	environment = "${var.environment}"
     }
 }
 
-#This is my IGW
 resource "aws_internet_gateway" "default" {
     vpc_id = "${aws_vpc.default.id}"
 	tags = {
         Name = "${var.IGW_name}"
     }
 }
-
-#This is my pub-sn1
 
 resource "aws_subnet" "subnet1-public" {
     vpc_id = "${aws_vpc.default.id}"
@@ -36,7 +42,6 @@ resource "aws_subnet" "subnet1-public" {
     }
 }
 
-#This is my pb sn2
 resource "aws_subnet" "subnet2-public" {
     vpc_id = "${aws_vpc.default.id}"
     cidr_block = "${var.public_subnet2_cidr}"
@@ -47,7 +52,6 @@ resource "aws_subnet" "subnet2-public" {
     }
 }
 
-#This is my pb sn3
 resource "aws_subnet" "subnet3-public" {
     vpc_id = "${aws_vpc.default.id}"
     cidr_block = "${var.public_subnet3_cidr}"
@@ -59,19 +63,7 @@ resource "aws_subnet" "subnet3-public" {
 	
 }
 
-#This is my pv sn
-resource "aws_subnet" "subnet-private" {
-    vpc_id = "${aws_vpc.default.id}"
-    cidr_block = "${var.private_subnet_cidr}"
-    availability_zone = "us-east-1a"
 
-    tags = {
-        Name = "${var.private_subnet_name}"
-    }
-	
-}
-
-#This is my RT
 resource "aws_route_table" "terraform-public" {
     vpc_id = "${aws_vpc.default.id}"
 
@@ -90,10 +82,8 @@ resource "aws_route_table_association" "terraform-public" {
     route_table_id = "${aws_route_table.terraform-public.id}"
 }
 
-#This is my sg
-
-resource "aws_security_group" "Open_all_gates" {
-  name        = "Open_all_gates"
+resource "aws_security_group" "allow_all" {
+  name        = "allow_all"
   description = "Allow all inbound traffic"
   vpc_id      = "${aws_vpc.default.id}"
 
@@ -112,5 +102,45 @@ resource "aws_security_group" "Open_all_gates" {
     }
 }
 
+# data "aws_ami" "my_ami" {
+#      most_recent      = true
+#      #name_regex       = "^Satish"
+#      owners           = ["xxxxyyyyxxxxx"]
+# }
 
 
+# resource "aws_instance" "web-1" {
+#     ami = var.imagename
+#     #ami = "ami-0d857ff0f5fc4e03b"
+#     #ami = "${data.aws_ami.my_ami.id}"
+#     availability_zone = "us-east-1a"
+#     instance_type = "t2.micro"
+#     key_name = "LaptopKey"
+#     subnet_id = "${aws_subnet.subnet1-public.id}"
+#     vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
+#     associate_public_ip_address = true	
+#     tags = {
+#         Name = "Server-1"
+#         Env = "Prod"
+#         Owner = "Sree"
+# 	CostCenter = "ABCD"
+#     }
+# }
+
+##output "ami_id" {
+#  value = "${data.aws_ami.my_ami.id}"
+#}
+#!/bin/bash
+# echo "Listing the files in the repo."
+# ls -al
+# echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++"
+# echo "Running Packer Now...!!"
+# packer build -var=aws_access_key=AAAAAAAAAAAAAAAAAA -var=aws_secret_key=BBBBBBBBBBBBB packer.json
+#packer validate --var-file creds.json packer.json
+#packer build --var-file creds.json packer.json
+#packer.exe build --var-file creds.json -var=aws_access_key=AAAAAAAAAAAAAAAAAA -var=aws_secret_key=BBBBBBBBBBBBB packer.json
+# echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++"
+# echo "Running Terraform Now...!!"
+# terraform init
+# terraform apply --var-file terraform.tfvars -var="aws_access_key=AAAAAAAAAAAAAAAAAA" -var="aws_secret_key=BBBBBBBBBBBBB" --auto-approve
+#https://discuss.devopscube.com/t/how-to-get-the-ami-id-after-a-packer-build/36
