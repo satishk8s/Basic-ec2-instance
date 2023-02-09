@@ -16,13 +16,13 @@ jobs:
           #ref: GoldenAmi
    
      
-      - name: Connecting GitHub Actions To AWS Using OIDC - Roles
-        uses: aws-actions/configure-aws-credentials@master
-        with:
-         role-to-assume: arn:aws:iam::363638483937:role/test-pipelines
-         role-session-name: github-actions-session
-         aws-region: us-east-1
-      - run: aws sts get-caller-identity
+      #- name: Connecting GitHub Actions To AWS Using OIDC - Roles
+        #uses: aws-actions/configure-aws-credentials@master
+       # with:
+        #role-to-assume: arn:aws:iam::363638483937:role/test-pipelines
+        # role-session-name: github-actions-session
+        # aws-region: us-east-1
+      #- run: aws sts get-caller-identity
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
         id: setup
